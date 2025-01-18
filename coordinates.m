@@ -1,83 +1,91 @@
-% MATLAB Script to demonstrate plotting coordinates in spherical, cylindrical, and Cartesian systems
+1.
+#!/bin/bash
 
-% Example 1: Cartesian Coordinates
-x1 = 8; % Starting point x-coordinate
-y1 = 6; % Starting point y-coordinate
-z1 = 7; % Starting point z-coordinate
-x2 = 9; % Ending point x-coordinate
-y2 = 5; % Ending point y-coordinate
-z2 = 6; % Ending point z-coordinate
+# Default stop word
+stopword="STOP"
 
-u = x2 - x1; % x-component
-v = y2 - y1; % y-component
-w = z2 - z1; % z-component
+# Check if a command-line argument is provided
+if [ $# -gt 0 ]; then
+    stopword=$1
+fi
 
-% Plotting Cartesian Vector
-figure;
-quiver3(x1, y1, z1, u, v, w, 'LineWidth', 2);
-axis equal;
-grid on;
-xlabel('X'); ylabel('Y'); zlabel('Z');
-title('3D Cartesian Vector');
+# Read input line by line
+while IFS= read -r line; do
+    # Check if the line contains the stop word
+    if echo "$line" | grep -q "$stopword"; then
+        # Print part of the line before the stop word
+        echo "$line" | sed "s/$stopword.*//"
+        break
+    else
+        # Print the whole line
+        echo "$line"
+    fi
+done
 
-% Example 2: Cylindrical Coordinates
-r = 5; % Radial distance
-theta = pi/4; % Azimuthal angle
-z_cyl = 7; % Height
 
-% Convert Cylindrical to Cartesian for plotting
-x_cyl = r * cos(theta);
-y_cyl = r * sin(theta);
+2.
+#!/bin/bash
 
-% Create a cylinder for visualization
-theta_c = linspace(0, 2*pi, 100);
-z_c = linspace(0, z_cyl, 50);
-[Theta_c, Z_c] = meshgrid(theta_c, z_c);
-X_c = r * cos(Theta_c);
-Y_c = r * sin(Theta_c);
+# Check if at least one argument is provided
+if [ $# -lt 2 ]; then
+    echo "Usage: $0 <even|odd> <args...>"
+    exit 1
+fi
 
-% Plotting Cylindrical Coordinate System
-figure;
-hold on;
-surf(X_c, Y_c, Z_c, 'FaceAlpha', 0.3, 'EdgeColor', 'none'); % Draw cylinder
-plot3([0, x_cyl], [0, y_cyl], [0, z_cyl], 'r', 'LineWidth', 2); % Radial line
-plot3([0, x_cyl], [0, y_cyl], [0, 0], 'g--', 'LineWidth', 1.5); % Projection on XY-plane
-plot3([x_cyl, x_cyl], [y_cyl, y_cyl], [0, z_cyl], 'b--', 'LineWidth', 1.5); % Projection on Z-axis
-scatter3(x_cyl, y_cyl, z_cyl, 100, 'k', 'filled'); % Point in cylindrical coordinates
-grid on;
-xlabel('X'); ylabel('Y'); zlabel('Z');
-title('Cylindrical Coordinate System');
-text(x_cyl, y_cyl, z_cyl, ' Point (x, y, z)', 'FontSize', 12, 'Color', 'k');
-view(3);
-axis equal;
+# Extract the first argument
+mode=$1
+shift # Remove the first argument to process the rest
 
-% Example 3: Spherical Coordinates
-rho = 5; % Radial distance
-theta_sph = pi/4; % Azimuthal angle
-phi = pi/6; % Polar angle
+# Loop through the remaining arguments
+index=1
+for arg in "$@"; do
+    if [[ "$mode" == "even" && $((index % 2)) -eq 0 ]]; then
+        echo "$arg"
+    elif [[ "$mode" == "odd" && $((index % 2)) -ne 0 ]]; then
+        echo "$arg"
+    fi
+    index=$((index + 1))
+done
 
-% Convert Spherical to Cartesian for plotting
-x_sph = rho * sin(phi) * cos(theta_sph);
-y_sph = rho * sin(phi) * sin(theta_sph);
-z_sph = rho * cos(phi);
 
-% Create a sphere for visualization
-[phi_s, theta_s] = meshgrid(linspace(0, pi, 50), linspace(0, 2*pi, 100));
-x_s = rho * sin(phi_s) .* cos(theta_s);
-y_s = rho * sin(phi_s) .* sin(theta_s);
-z_s = rho * cos(phi_s);
 
-% Plotting Spherical Coordinate System
-figure;
-hold on;
-surf(x_s, y_s, z_s, 'FaceAlpha', 0.3, 'EdgeColor', 'none'); % Draw sphere
-plot3([0, x_sph], [0, y_sph], [0, z_sph], 'r', 'LineWidth', 2); % Radial line
-plot3([0, x_sph], [0, y_sph], [0, 0], 'g--', 'LineWidth', 1.5); % Projection on XY-plane
-plot3([x_sph, x_sph], [y_sph, y_sph], [0, z_sph], 'b--', 'LineWidth', 1.5); % Projection on Z-axis
-scatter3(x_sph, y_sph, z_sph, 100, 'k', 'filled'); % Point in spherical coordinates
-grid on;
-xlabel('X'); ylabel('Y'); zlabel('Z');
-title('Spherical Coordinate System');
-text(x_sph, y_sph, z_sph, ' Point (x, y, z)', 'FontSize', 12, 'Color', 'k');
-view(3);
-axis equal;
+3.
+
+#!/bin/bash
+
+# Declare an array to map numbers to words
+numbers=("zero" "one" "two" "three" "four" "five" "six" "seven" "eight" "nine" "ten"
+         "eleven" "twelve" "thirteen" "fourteen" "fifteen" "sixteen" "seventeen"
+         "eighteen" "nineteen" "twenty" "thirty" "forty" "fifty" "sixty" "seventy"
+         "eighty" "ninety" "hundred")
+
+# Function to convert word numbers into numeric values
+word_to_number() {
+    local word=$1
+    for i in "${!numbers[@]}"; do
+        if [ "${numbers[$i]}" = "$word" ]; then
+            echo $i
+            return
+        fi
+    done
+}
+
+# Read input from standard input
+read -r input
+
+# Replace number words with their numeric equivalents
+for i in "${!numbers[@]}"; do
+    input=${input//${numbers[$i]}/$i}
+done
+
+# Replace word operators with their arithmetic equivalents
+input=${input//plus/+}
+input=${input//minus/-}
+input=${input//times/*}
+input=${input//by//}
+
+# Evaluate the expression using `bc` (Basic Calculator)
+result=$(echo "$input" | bc)
+
+# Print the result
+echo "$result"
